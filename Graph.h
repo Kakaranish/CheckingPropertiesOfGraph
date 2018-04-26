@@ -7,9 +7,6 @@
 #include <stdexcept>	
 #include <string>
 #include <regex>
-#include <vector>
-#include <queue>
-#include <stack>
 #include <functional>
 
 

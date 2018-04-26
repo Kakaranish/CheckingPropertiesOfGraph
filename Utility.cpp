@@ -17,6 +17,5 @@ std::vector<int> extractIntegers(std::string str) {
 
 		++currOff;
 	}
-
 	return result;
 }
