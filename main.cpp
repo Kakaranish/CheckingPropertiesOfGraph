@@ -7,9 +7,18 @@
 #include "Queue.h"
 #include "Queue.cpp"
 
+#include "Graph.h"
+
 
 int main(int argc, char* argv[]){
 
+	Graph g(false); //undirected graph
+	if (!g.loadGraph("Testy/articulation.txt"))
+		std::cout << "Unable to load given file!" << std::endl;
+	//g.showAdjMatrix();
+	
+	g.findArticulationPoints();
+	
 
 
 	_getch();

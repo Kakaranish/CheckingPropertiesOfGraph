@@ -1,4 +1,6 @@
 #include "Graph.h"
+#include "Stack.cpp"
+#include "Queue.cpp"
 
 void Graph::dealocateAdjMatrix() {
 	for (int i = 0; i < numOfVertices; i++)
@@ -20,6 +22,15 @@ Graph::Graph(bool _isDirected = true) : isDirected(_isDirected) {}
 
 Graph::Graph(std::string filename, bool _isDirected = true) : isDirected(_isDirected) {
 
+}
+
+Graph::~Graph() {
+	if (!numOfVertices)
+		return;
+	
+	for (int i = 0; i< numOfVertices; i++)
+		delete[] adj_matrix[i];
+	delete[] adj_matrix;
 }
 
 Graph::Graph(std::size_t _numOfVertices, bool _isDirected = true) : isDirected(_isDirected) ,
@@ -110,7 +121,7 @@ bool Graph::isBigraph() {
 	for (int i = 0; i < n; i++)
 		C[i] = 0;
 
-	std::queue<int> Q;
+	Queue<int> Q;
 
 	//Oczywiscie wykorzystujemy algorytm przeszukiwania BFS
 
@@ -143,9 +154,12 @@ bool Graph::isBigraph() {
 
 
 void Graph::sortTopologically() {
-	
+	if (!isDirected)
+		throw std::exception("Unable to perform topological sort! Required directed graph!");
+
+
 	int n = numOfVertices;
-	std::stack<int> S;
+	Stack<int> S;
 
 	enum Color{WHITE=0, GRAY,GREEN};
 
@@ -194,8 +208,69 @@ void Graph::sortTopologically() {
 		S.pop();
 	}
 	std::cout << std::endl;
-			
+}
+
+
+void Graph::findBridges() {
+	if (isDirected)
+		throw std::exception("Unable to find bridges! Required undirected graph!");
+
+	int n = numOfVertices; //liczba wierzcholkow w grafie
+	int cv; //przechowuje numery wierzcholkow dla DFS, liczba calkowita
 
 
 
+	int *D = new int[n]; //dynamiczna tablica dla numerów wierzcho³ków nadawanych przez DFS
+	for (int i = 0; i<n; i++)
+		D[i] = 0;
+	std::list<std::pair<int, int>> L; //lista par wierzcholkow polaczonych ze soba mostem
+
+
+	std::function<int(int, int)> DFSb = [&](int v, int vf)->int {
+		int Low, temp;
+
+		D[v] = cv;
+		Low = cv;
+		++cv;
+
+		for (int u = 0; u < n; u++) {
+			if (!adj_matrix[v][u]) //wierzcho³ek u nie jest s¹siadem wierzcho³ka v
+				continue;
+
+			if (u != vf) { //s¹siad nie mo¿e byæ ojcem v
+				if (D[u] == 0) { //jeœli s¹siad nie by³ wczeœniej odwiedzany, to w sposób rekurencyjny go odwiedzamy
+
+
+					temp = DFSb(u, v); //ojcem s¹siada u jest oczywiœcie v
+					if (temp < Low)
+						Low = temp;
+				}
+				else if (D[u] < Low)
+					Low = D[u];
+			}
+		}
+
+		if (vf > -1 && Low == D[v]) {
+			L.push_back(std::pair<int, int>(v, vf));
+		}
+
+
+
+		return Low;
+	};
+
+
+	/*
+										Algorytm g³ówny programu
+	*/
+	for (int i = 0; i < n; i++) {
+		if (D[i] != 0)
+			continue;
+		cv = 1;
+		DFSb(i, -1); //na poczatku wierzcholek nie ma rodzica, wiec wpisujemy -1
+	}
+
+	// Wypisywanie znalezionych mostów
+	for (auto& x : L)
+		std::cout << x.first << ", " << x.second << std::endl;
 }
