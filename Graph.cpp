@@ -254,69 +254,62 @@ void Graph::findBridges() {
 	}
 }
 void Graph::findArticulationPoints() {
+	int vertex_counter; //przechowuje numery wierzcho³ków dla DFS
+	int son_num; //liczba synów na drzewie rozponaj¹cym
+	int *DFS_arr; //dynamiczna tablica dla numerów wierzcho³ków nadawanych przez DFS
 
-	int n = numOfVertices; //liczba wierzcho³ków w grafie
-	std::list<int> L; //lista wierzcho³ków, które s¹ punktami artykulacji
-	int dv; //przechowuje numery wierzcho³ków dla DFS
-	int nc; //liczba synów na drzewie rozponaj¹cym
-	int* D; //dynamiczna tablica dla numerów wierzcho³ków nadawanych przez DFS
+	DFS_arr = new int[numOfVertices];
+	for (int i = 0; i < numOfVertices; ++i)
+		DFS_arr[i] = 0;
 
-	D = new int[n];
-	for (int i = 0; i < n; ++i)
-		D[i] = 0;
-
-	std::function<int(int, int)> DFSap = [&](int v, int vf)->int {
-		int Low, temp;
+	std::function<int(int, int)> DFSap = [&](int v, int v_father)->int {
+		int low, temp;
 		bool test;
 
-		D[v] = dv;
-		Low = dv;
-		++dv;
+		DFS_arr[v] = vertex_counter;
+		low = vertex_counter;
+		++vertex_counter;
 		test = false;
 
-		for (int u = 0; u < n; u++) {
+		for (int u = 0; u < numOfVertices; u++) {
 			if (!adj_matrix[v][u])
 				continue;
-			if (u != vf) {
-				if (D[u] == 0) {
+			if (u != v_father) {
+				if (DFS_arr[u] == 0) {
 					temp = DFSap(u, v);
-					if (temp < Low)
-						Low = temp;
-					if (temp >= D[v])
+					if (temp < low)
+						low = temp;
+					if (temp >= DFS_arr[v])
 						test = true;
 				}
-				else if (D[u] < Low)
-					Low = D[u];
+				else if (DFS_arr[u] < low)
+					low = DFS_arr[u];
 			}
 		}
 		if (test)
-			L.push_back(v);
+			std::cout << v << "\t";
 
-		return Low;
+		return low;
 	};
 
 
-	for (int i = 0; i < n; ++i) {
-		if (D[i] > 0)
+	for (int v = 0; v < numOfVertices; ++v) {
+		if (DFS_arr[v] > 0)
 			continue;
-		dv = 2; //pocz¹tek numeracji DFS dla synów
-		nc = 0;
-		D[i] = 1; //korzeñ ma zawsze DFS równy 1
+		vertex_counter = 2; //pocz¹tek numeracji DFS dla synów
+		son_num = 0;
+		DFS_arr[v] = 1; //korzeñ ma zawsze DFS równy 1
 
-		for (int u = 0; u < n; u++) {
-			if (!adj_matrix[i][u]) //sprawdzamy czy wierzcho³ek jest s¹siadem
+		for (int u = 0; u < numOfVertices; u++) {
+			if (!adj_matrix[v][u]) //sprawdzamy czy wierzcho³ek jest s¹siadem
 				continue;
-			if (D[u] == 0) {
-				++nc;
-				DFSap(u, i);
+			if (DFS_arr[u] == 0) {
+				++son_num;
+				DFSap(u, v);
 			}
 
 		}
-		if (nc > 1)
-			L.push_back(i);
+		if (son_num > 1)
+			std::cout << v << "\t";
 	}
-
-	std::cout << "Found articulation points: " << std::endl;
-	for (auto& x : L)
-		std::cout << x << std::endl;
 }
